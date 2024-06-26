@@ -1,1 +1,3 @@
-pip install google-auth-oauthlib
+google-auth-oauthlib
+google-auth
+google-api-python-client
