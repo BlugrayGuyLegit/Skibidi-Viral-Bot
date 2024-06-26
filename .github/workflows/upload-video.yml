@@ -1,0 +1,29 @@
+name: Upload Video Every Hour
+
+on:
+  schedule:
+    - cron: '0 * * * *'  # Exécute toutes les heures
+  push:
+    branches:
+      - main
+
+jobs:
+  upload-video:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+    - name: Install dependencies
+      run: |
+        pip install google-api-python-client google-auth requests oauth2client
+    - name: Create client_secrets.json
+      run: |
+        echo "${{ secrets.CLIENT_SECRETS_JSON }}" > client_secrets.json
+    - name: Run upload script
+      env:
+        API_KEY: ${{ secrets.API_KEY }}
+        CHANNEL_ID: ${{ secrets.CHANNEL_ID }}
+      run: python path/to/your/upload_script.py
