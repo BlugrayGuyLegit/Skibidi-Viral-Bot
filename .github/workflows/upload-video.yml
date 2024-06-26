@@ -1,29 +1,29 @@
-name: Upload Video Every Hour
+name: Upload Video to YouTube
 
 on:
   schedule:
-    - cron: '0 * * * *'  # Exécute toutes les heures
-  push:
-    branches:
-      - main
+    - cron: "*/30 * * * *"
 
 jobs:
-  upload-video:
+  upload_video:
     runs-on: ubuntu-latest
+
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.x'
-    - name: Install dependencies
-      run: |
-        pip install google-api-python-client google-auth requests oauth2client
-    - name: Create client_secrets.json
-      run: |
-        echo "${{ secrets.CLIENT_SECRETS_JSON }}" > client_secrets.json
-    - name: Run upload script
-      env:
-        API_KEY: ${{ secrets.API_KEY }}
-        CHANNEL_ID: ${{ secrets.CHANNEL_ID }}
-      run: python upload_script.py
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'  # Remplacez par la version de Python que vous utilisez
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Execute Python script
+        run: python upload_script.py  # Remplacez par le nom de votre script Python
+        env:
+          API_KEY: ${{ secrets.API_KEY }}  # Ajoutez votre clé API comme secret dans les paramètres du repository
+          CHANNEL_ID: ${{ secrets.CHANNEL_ID }}  # Ajoutez votre CHANNEL_ID comme secret dans les paramètres du repository
