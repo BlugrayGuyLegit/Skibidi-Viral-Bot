@@ -1,0 +1,40 @@
+name: Upload to Google Sheets
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install google-auth google-auth-oauthlib google-auth-httplib2 google-api-python-client oauth2client
+
+    - name: Create client_secrets.json from secret
+      run: |
+        echo "${{ secrets.CLIENT_SECRETS_JSON }}" > client_secrets.json
+
+    - name: Debug client_secrets.json
+      run: |
+        echo "Contenu de client_secrets.json:"
+        cat client_secrets.json  # Affiche le contenu du fichier pour vérifier
+        echo "Validation du format JSON:"
+        python -m json.tool client_secrets.json  # Vérifie que le fichier est un JSON valide
+
+    - name: Run upload script
+      run: python upload_script.py
+      env:
+        CLIENT_SECRETS_FILE: client_secrets.json
