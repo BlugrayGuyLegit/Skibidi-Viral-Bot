@@ -18,10 +18,14 @@ jobs:
         python-version: '3.x'
     - name: Install dependencies
       run: |
-        pip install google-api-python-client google-auth requests oauth2client
+        pip install google-api-python-client google-auth google-auth-oauthlib requests oauth2client
     - name: Create client_secrets.json
       run: |
         echo "${{ secrets.CLIENT_SECRETS_JSON }}" > client_secrets.json
+    - name: Debug client_secrets.json
+      run: |
+        cat client_secrets.json  # Affiche le contenu du fichier pour vérifier
+        python -m json.tool client_secrets.json  # Vérifie que le fichier est un JSON valide
     - name: Run bot script
       env:
         API_KEY: ${{ secrets.API_KEY }}
