@@ -1,53 +1,67 @@
 import os
-from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
+from oauth2client.service_account import ServiceAccountCredentials
 
 # Configuration
 API_KEY = os.getenv('API_KEY')
 CLIENT_SECRETS_FILE = 'client_secrets.json'
 SCOPES = ['https://www.googleapis.com/auth/youtube.force-ssl']
 CHANNEL_ID = os.getenv('CHANNEL_ID')
-API_SERVICE_NAME = 'youtube'
-API_VERSION = 'v3'
 
-def get_authenticated_service():
-    flow = google_auth_oauthlib.flow.InstalledAppFlow.from_client_secrets_file(
-        CLIENT_SECRETS_FILE, SCOPES)
-    credentials = flow.run_local_server()
-    print('Authentication successful!')
+# Authentification
+credentials = ServiceAccountCredentials.from_json_keyfile_name(CLIENT_SECRETS_FILE, SCOPES)
+youtube = build('youtube', 'v3', developerKey=API_KEY, credentials=credentials)
 
-    return build(API_SERVICE_NAME, API_VERSION, credentials=credentials)
-
-def upload_video(youtube, file_path, title, description):
+def upload_video(file_path, title, description):
+    media = MediaFileUpload(file_path, mimetype='video/*', resumable=True)
     request = youtube.videos().insert(
         part='snippet,status',
         body={
             'snippet': {
-                'categoryId': '22',
                 'title': title,
-                'description': description
+                'description': description,
+                'tags': ['Skibidi Toilet', 'Buzz'],
             },
             'status': {
-                'privacyStatus': 'unlisted'
+                'privacyStatus': 'public'
             }
         },
-        media_body=MediaFileUpload(file_path, chunksize=-1, resumable=True)
+        media_body=media
     )
-
     response = request.execute()
-    print('Video upload successful!')
     return response
 
-def main():
-    youtube = get_authenticated_service()
-    
-    file_path = 'path_to_your_video_file.mp4'  # Replace with the path to your video file
-    title = 'My Test Video'
-    description = 'This is a test video uploaded from Python script.'
+# Lire les informations de la vidéo à partir du fichier
+with open('video_to_upload.txt', 'r') as file:
+    title = file.readline().strip()
+    description = file.readline().strip()
+    file_path = file.readline().strip()
 
-    upload_response = upload_video(youtube, file_path, title, description)
-    print('Video ID:', upload_response['id'])
+upload_response = upload_video(file_path, title, description)
+new_video_id = upload_response['id']
 
-if __name__ == '__main__':
-    main()
+# Réponse aux commentaires sur la nouvelle vidéo
+def respond_to_comments(video_id, response_text):
+    request = youtube.commentThreads().list(
+        part='snippet',
+        videoId=video_id,
+        textFormat='plainText'
+    )
+    response = request.execute()
+    comments = response.get('items', [])
+
+    for comment in comments:
+        comment_id = comment['id']
+        reply_request = youtube.comments().insert(
+            part='snippet',
+            body={
+                'snippet': {
+                    'parentId': comment_id,
+                    'textOriginal': response_text
+                }
+            }
+        )
+        reply_request.execute()
+
+respond_to_comments(new_video_id, "Thank you for watching!")
