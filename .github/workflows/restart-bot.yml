@@ -31,3 +31,27 @@ jobs:
         API_KEY: ${{ secrets.API_KEY }}
         CHANNEL_ID: ${{ secrets.CHANNEL_ID }}
       run: python script.py
+
+  upload-video:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+    - name: Install dependencies
+      run: |
+        pip install google-api-python-client google-auth google-auth-oauthlib requests oauth2client
+    - name: Create client_secrets.json
+      run: |
+        echo "${{ secrets.CLIENT_SECRETS_JSON }}" > client_secrets.json
+    - name: Debug client_secrets.json
+      run: |
+        cat client_secrets.json  # Affiche le contenu du fichier pour vérifier
+        python -m json.tool client_secrets.json  # Vérifie que le fichier est un JSON valide
+    - name: Run upload script
+      env:
+        API_KEY: ${{ secrets.API_KEY }}
+        CHANNEL_ID: ${{ secrets.CHANNEL_ID }}
+      run: python upload_script.py
