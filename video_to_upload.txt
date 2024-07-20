@@ -1,0 +1,8 @@
+{
+  "video_path": "path/to/video.mp4",
+  "title": "STVBKOS_TEST",
+  "description": "REGULAR TEST OF STVKOS",
+  "tags": ["BOT", "SKIBIDI TOILET", "KEAMSOS"],
+  "category": "22",
+  "privacyStatus": "public"
+}
